@@ -1844,6 +1844,7 @@ GameObject:
   - component: {fileID: 1481170849}
   - component: {fileID: 1481170848}
   - component: {fileID: 1481170847}
+  - component: {fileID: 1481170853}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2010,6 +2011,20 @@ MonoBehaviour:
   wallCheckLeft: {x: -0.42, y: 0}
   wallCheckRight: {x: 0.48, y: 0}
   wallCheckRadius: 0.12
+--- !u!114 &1481170853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1481170846}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 706c1af8fc76f944eabbbcb9aff4052d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serverIP: localhost
+  serverPort: 23000
 --- !u!1 &1625975391
 GameObject:
   m_ObjectHideFlags: 0
