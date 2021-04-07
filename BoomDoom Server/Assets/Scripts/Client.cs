@@ -35,6 +35,7 @@ public class Client
     public static void HandleData(byte[] data)
     {
         Packet packet = new Packet(data);
+        packet.SetBytes();
         packetActions[packet.ReadInt()](packet);
     }
 

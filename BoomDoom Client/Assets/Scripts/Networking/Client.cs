@@ -26,6 +26,11 @@ public class Client : Singleton<Client>
         Connect(serverIP, serverPort);
     }
 
+    private void FixedUpdate()
+    {
+        ClientSend.MyPosition(transform.position);
+    }
+
     private void Connect(string ip, int port)
     {
         socket = new TcpClient();
@@ -47,9 +52,15 @@ public class Client : Singleton<Client>
     private void ReceiveCallback(IAsyncResult ar)
     {
         stream.EndRead(ar);
-        Packet packet = new Packet(buffer);
-        packetActions[packet.ReadInt()](packet);
+        HandleData(buffer);
         stream.BeginRead(buffer, 0, dataBufferSize, ReceiveCallback, null);
+    }
+
+    private void HandleData(byte[] data)
+    {
+        Packet packet = new Packet(data);
+        packet.SetBytes();
+        packetActions[packet.ReadInt()](packet);
     }
 
     public void SendData(byte[] data)

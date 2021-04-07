@@ -7,6 +7,7 @@ public static class ServerHandle
     public static void HelloReceived(Packet packet)
     {
         Debug.Log(packet.ReadString());
+        ServerSend.HelloReceived();
     }
 
     public static void MyPosition(Packet packet)

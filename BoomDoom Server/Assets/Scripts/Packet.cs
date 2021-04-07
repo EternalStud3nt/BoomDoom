@@ -40,6 +40,11 @@ public class Packet
         arrayBuffer = listBuffer.ToArray();
         return arrayBuffer;
     }
+
+    public void SetBytes()
+    {
+        arrayBuffer = listBuffer.ToArray();
+    }
     #endregion
     #region Write
     public void Write(byte value)

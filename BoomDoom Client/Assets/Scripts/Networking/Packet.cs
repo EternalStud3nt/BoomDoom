@@ -26,7 +26,7 @@ public class Packet
 
     public Packet(byte[] data)
     {
-        
+        Write(data);
     }
 
     public Packet(int packetID)
@@ -39,6 +39,11 @@ public class Packet
     {
         arrayBuffer = listBuffer.ToArray();
         return arrayBuffer;
+    }
+
+    public void SetBytes()
+    {
+        arrayBuffer = listBuffer.ToArray();
     }
     #endregion
     #region Write

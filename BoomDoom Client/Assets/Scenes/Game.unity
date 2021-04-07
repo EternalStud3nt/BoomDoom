@@ -2023,7 +2023,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 706c1af8fc76f944eabbbcb9aff4052d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverIP: localhost
+  serverIP: 192.168.1.6
   serverPort: 23000
 --- !u!1 &1625975391
 GameObject:
