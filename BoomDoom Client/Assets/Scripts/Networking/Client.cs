@@ -12,6 +12,14 @@ public class Client : Singleton<Client>
     
     private TcpClient socket;
     private NetworkStream stream;
+    private readonly int dataBufferSize = 4096;
+    private byte[] buffer;
+
+    public static Dictionary<int, Action<Packet>> packetActions = new Dictionary<int, Action<Packet>>
+    {
+        { (int)ServerPackets.HelloReceived, ClientHandle.HelloReceived },
+        { (int)ServerPackets.PlayerPosition, ClientHandle.PlayerPosition }
+    };
 
     private void Start()
     {
@@ -30,20 +38,23 @@ public class Client : Singleton<Client>
     private void OnConnectedToServerCallback(IAsyncResult ar)
     {
         socket.EndConnect(ar);
+        buffer = new byte[dataBufferSize];
         stream = socket.GetStream();
-        Test();
+        ClientSend.Hello();
+        stream.BeginRead(buffer, 0, dataBufferSize, ReceiveCallback, null);
+    }
+
+    private void ReceiveCallback(IAsyncResult ar)
+    {
+        stream.EndRead(ar);
+        Packet packet = new Packet(buffer);
+        packetActions[packet.ReadInt()](packet);
+        stream.BeginRead(buffer, 0, dataBufferSize, ReceiveCallback, null);
     }
 
     public void SendData(byte[] data)
     {
         Debug.Log("Trying to send data...");
         stream.Write(data, 0, data.Length);
-    }
-
-    public void Test()
-    {
-        Packet packet = new Packet();
-        packet.Write(69);
-        ClientSend.SendPacket(packet);
     }
 }

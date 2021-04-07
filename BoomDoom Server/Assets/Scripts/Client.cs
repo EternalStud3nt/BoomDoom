@@ -12,8 +12,13 @@ public class Client
     TcpClient socket;
     NetworkStream stream;
     private byte[] receiveBuffer;
-    int dataBufferSize = 4096;
-
+    readonly int dataBufferSize = 4096;
+    public static Dictionary<int, Action<Packet>> packetActions = new Dictionary<int, Action<Packet>>
+    {
+        { (int)ClientPackets.Hello,  ServerHandle.HelloReceived },
+        { (int)ClientPackets.MyPosition, ServerHandle.MyPosition }
+    };
+    
     public void Connect(TcpClient socket)
     {
         receiveBuffer = new byte[dataBufferSize];
@@ -22,10 +27,23 @@ public class Client
         stream.BeginRead(receiveBuffer, 0, dataBufferSize, ReceiveCallback, null);
     }
 
-    private void ReceiveCallback(IAsyncResult ar)
+    public void SendData(byte[] data)
     {
+        stream.BeginWrite(data, 0, data.Length, null, null);
+    }
+
+    public static void HandleData(byte[] data)
+    {
+        Packet packet = new Packet(data);
+        packetActions[packet.ReadInt()](packet);
+    }
+
+    private void ReceiveCallback(IAsyncResult ar)
+    {       
         int dataSize = stream.EndRead(ar);
-        Debug.Log("I received something");
-        Debug.Log(BitConverter.ToInt32(receiveBuffer, 0));
+        byte[] data = new byte[dataSize];
+        Array.Copy(receiveBuffer, data, dataSize);
+        HandleData(receiveBuffer);
+        stream.BeginRead(receiveBuffer, 0, dataBufferSize, ReceiveCallback, null);
     }
 }

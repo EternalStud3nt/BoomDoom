@@ -5,6 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
+public enum ClientPackets
+{
+    Hello = 1, 
+    MyPosition
+}
+
+public enum ServerPackets
+{
+    HelloReceived = 1, 
+    PlayerPosition
+}
 public class Packet
 {
     private byte[] arrayBuffer;

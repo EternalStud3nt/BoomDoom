@@ -9,7 +9,7 @@ public static class Server
 {
     public static int Port { get; private set; }
     private static TcpListener listener;
-    private static Dictionary<int, Client> clients = new Dictionary<int, Client>();
+    public static Dictionary<int, Client> clients = new Dictionary<int, Client>();
 
     public static void Start(int port)
     {
@@ -22,7 +22,7 @@ public static class Server
 
     private static void AcceptTCPClientCallback(IAsyncResult ar)
     {
-
+        Debug.Log("NEW CLIENT");
         TcpClient tcpClient = listener.EndAcceptTcpClient(ar);
         Client client = new Client();
         clients.Add(clients.Count, client);
