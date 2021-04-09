@@ -34,7 +34,7 @@ public class AttackJoystick : Joystick
     {
         base.OnTouchDrag(touch);
         Vector2 swipe = touch.position - (Vector2)ring.position;
-        Aim.instance.DrawLine(Output);
+        Pet.instance.DrawLine(Output);
         //DisableOnBigRange(swipe);       
     }
 
@@ -79,8 +79,11 @@ public class AttackJoystick : Joystick
 
     protected override void RenderJoystick(bool render)
     {
-        if(!render)
-            Aim.instance.StopDrawing();
+        if(Pet.instance != null)
+        {
+            if (!render)
+                Pet.instance.StopDrawing();
+        }      
         base.RenderJoystick(render);
 
     }

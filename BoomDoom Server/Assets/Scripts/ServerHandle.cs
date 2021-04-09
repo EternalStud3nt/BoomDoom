@@ -4,14 +4,18 @@ using System;
 using UnityEngine;
 public static class ServerHandle
 {
-    public static void HelloReceived(Packet packet)
+    public static void WelcomeReceived(Packet packet)
     {
-        Debug.Log(packet.ReadString());
-        ServerSend.HelloReceived();
-    }
-
-    public static void MyPosition(Packet packet)
-    {
-        Debug.Log(packet.ReadVector2());
+        int fromClientID = packet.ReadInt();
+        foreach(Client client in Server.clients.Values)
+        {
+            if(client.id != fromClientID)
+            {
+                // Spawn the client that just connected to all other client instances
+                ServerSend.SpawnPlayer(fromClientID, client.id);
+                // Spawn existing clients to the just-connected client
+                ServerSend.SpawnPlayer(client.id, fromClientID);
+            }  
+        }
     }
 }

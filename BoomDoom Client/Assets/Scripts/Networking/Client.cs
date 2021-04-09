@@ -6,32 +6,21 @@ using System.Net.Sockets;
 using System;
 
 public class Client : Singleton<Client>
-{
-    [SerializeField] string serverIP;
-    [SerializeField] int serverPort = 23000;
-    
+{   
     private TcpClient socket;
     private NetworkStream stream;
     private readonly int dataBufferSize = 4096;
     private byte[] buffer;
+    public Action OnConnection;
+    public int clientID;
 
     public static Dictionary<int, Action<Packet>> packetActions = new Dictionary<int, Action<Packet>>
     {
-        { (int)ServerPackets.HelloReceived, ClientHandle.HelloReceived },
-        { (int)ServerPackets.PlayerPosition, ClientHandle.PlayerPosition }
+        { (int)ServerPackets.Welcome, ClientHandle.Welcome },
+        { (int)ServerPackets.SpawnPlayer, ClientHandle.SpawnPlayer }
     };
 
-    private void Start()
-    {
-        Connect(serverIP, serverPort);
-    }
-
-    private void FixedUpdate()
-    {
-        ClientSend.MyPosition(transform.position);
-    }
-
-    private void Connect(string ip, int port)
+    public void Connect(string ip, int port)
     {
         socket = new TcpClient();
         if (ip == "localhost")
@@ -45,14 +34,14 @@ public class Client : Singleton<Client>
         socket.EndConnect(ar);
         buffer = new byte[dataBufferSize];
         stream = socket.GetStream();
-        ClientSend.Hello();
         stream.BeginRead(buffer, 0, dataBufferSize, ReceiveCallback, null);
+        ThreadManager.ExecuteOnMainThread(() => { OnConnection?.Invoke(); });      
     }
 
     private void ReceiveCallback(IAsyncResult ar)
     {
         stream.EndRead(ar);
-        HandleData(buffer);
+        ThreadManager.ExecuteOnMainThread(() => HandleData(buffer));
         stream.BeginRead(buffer, 0, dataBufferSize, ReceiveCallback, null);
     }
 
@@ -65,7 +54,6 @@ public class Client : Singleton<Client>
 
     public void SendData(byte[] data)
     {
-        Debug.Log("Trying to send data...");
         stream.Write(data, 0, data.Length);
     }
 }

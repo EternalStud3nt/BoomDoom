@@ -4,22 +4,15 @@ using UnityEngine;
 
 public static class ClientSend 
 {
-    public static void SendData(byte[] data)
+    public static void SendPacket(Packet packet)
     {
-        Client.Instance.SendData(data);
+        Client.Instance.SendData(packet.ToArray());
     }
 
-    public static void Hello()
+    public static void WelcomeReceived()
     {
-        Packet packet = new Packet((int)ClientPackets.Hello);
-        packet.Write("Hello server!");
-        SendData(packet.ToArray());
-    }
-
-    public static void MyPosition(Vector2 position)
-    {
-        Packet packet = new Packet((int)ClientPackets.MyPosition);
-        packet.Write(position);
-        SendData(packet.ToArray());
+        Packet packet = new Packet((int)ClientPackets.WelcomeReceived);
+        packet.Write(Client.Instance.clientID);
+        SendPacket(packet);
     }
 }

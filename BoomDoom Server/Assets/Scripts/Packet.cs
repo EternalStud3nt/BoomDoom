@@ -7,14 +7,13 @@ using UnityEngine;
 
 public enum ClientPackets
 {
-    Hello = 1,
-    MyPosition
+    WelcomeReceived = 1
 }
 
 public enum ServerPackets
 {
-    HelloReceived = 1,
-    PlayerPosition
+    Welcome = 1,
+    SpawnPlayer,
 }
 public class Packet
 {

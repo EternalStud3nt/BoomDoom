@@ -1,18 +1,22 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public static class ClientHandle
 {
-    public static void HelloReceived(Packet packet)
+    public static void Welcome(Packet packet)
     {
-        string message = packet.ReadString();
-        Debug.Log(message);
+        int clientID = packet.ReadInt();
+        Debug.Log("Received ID: " + clientID);
+        Client.Instance.clientID = clientID;
+        GameManager.Instance.SpawnLocalPlayer(clientID);
+        ClientSend.WelcomeReceived();
     }
 
-    public static void PlayerPosition(Packet packet)
+    public static void SpawnPlayer(Packet packet)
     {
-        string message = packet.ReadString();
-        Debug.Log(message);
+        int newClientID = packet.ReadInt();
+        GameManager.Instance.SpawnOnlinePlayer(newClientID);
     }
 }

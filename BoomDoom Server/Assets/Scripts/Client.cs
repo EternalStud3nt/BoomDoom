@@ -13,18 +13,24 @@ public class Client
     NetworkStream stream;
     private byte[] receiveBuffer;
     readonly int dataBufferSize = 4096;
+    public int id { get; private set; }
     public static Dictionary<int, Action<Packet>> packetActions = new Dictionary<int, Action<Packet>>
     {
-        { (int)ClientPackets.Hello,  ServerHandle.HelloReceived },
-        { (int)ClientPackets.MyPosition, ServerHandle.MyPosition }
+        { (int)ClientPackets.WelcomeReceived, ServerHandle.WelcomeReceived}
     };
     
+    public Client(int id)
+    {
+        this.id = id;
+    }
+
     public void Connect(TcpClient socket)
     {
         receiveBuffer = new byte[dataBufferSize];
         this.socket = socket;
         stream = this.socket.GetStream();
         stream.BeginRead(receiveBuffer, 0, dataBufferSize, ReceiveCallback, null);
+        ServerSend.Welcome(id);
     }
 
     public void SendData(byte[] data)

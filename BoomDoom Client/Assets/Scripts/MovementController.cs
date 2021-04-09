@@ -2,8 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MovementController : MonoBehaviour
+public class MovementController : Singleton<MovementController>
 {
+    public Transform petPosition;
     #region variables
     [Header("Movement")]
     [SerializeField] float movementSpeed;

@@ -5,9 +5,9 @@ using UnityEngine;
 public static class ServerSend
 {
     #region Send Data
-    private static void SendData(int clientID, Packet packet)
+    private static void SendData(int toClient, Packet packet)
     {
-        Server.clients[clientID].SendData(packet.ToArray());
+        Server.clients[toClient].SendData(packet.ToArray());
     }
 
     private static void SendDataToAll(Packet packet)
@@ -29,17 +29,22 @@ public static class ServerSend
         }
     }
     #endregion
-    public static void HelloReceived()
+    public static void Welcome(int toClient)
     {
-        Packet packet = new Packet((int)ServerPackets.HelloReceived);
-        packet.Write("I received your hello, welcome");
-        SendDataToAll(packet);
+        Packet packet = new Packet((int)ServerPackets.Welcome);
+        packet.Write(toClient);
+        Debug.Log("Sending ID: " + toClient);
+        SendData(toClient, packet);
     }
 
-    public static void ClientPosition(int clientID, Vector2 position)
+    /// <summary>
+    /// Sends a packet to someone indicating that they should spawn this player
+    /// </summary>
+    /// <param name="clientToSpawn"></param>
+    public static void SpawnPlayer(int clientToSpawn, int toClient)
     {
-        Packet packet = new Packet((int)ServerPackets.PlayerPosition);
-        packet.Write($"The position of client: {clientID} is {position}.");
-        SendDataToAll(packet);
+        Packet packet = new Packet((int)ServerPackets.SpawnPlayer);
+        packet.Write(clientToSpawn);
+        SendData(toClient, packet);
     }
 }

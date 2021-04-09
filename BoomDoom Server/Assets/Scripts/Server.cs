@@ -24,10 +24,9 @@ public static class Server
     {
         Debug.Log("NEW CLIENT");
         TcpClient tcpClient = listener.EndAcceptTcpClient(ar);
-        Client client = new Client();
+        Client client = new Client(clients.Count);
         clients.Add(clients.Count, client);
         client.Connect(tcpClient);
         listener.BeginAcceptTcpClient(AcceptTCPClientCallback, null);
-
     }
 }

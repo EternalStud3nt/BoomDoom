@@ -11,6 +11,7 @@ public class Singleton<T> : MonoBehaviour where T: Component
             Instance = GetComponent<T>();
         else
         {
+            Debug.Log("FOUND ANOTHER GAMEOBJECT WITH THE SAME SCRIPT, I AM DESTROYING IT");
             Destroy(Instance.gameObject);
             GameObject obj = new GameObject();
             T comp = obj.AddComponent<T>();

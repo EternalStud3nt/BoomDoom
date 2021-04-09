@@ -5,6 +5,7 @@ using UnityEngine;
 public class CombatController : MonoBehaviour
 {
     [SerializeField] GameObject bullet;
+
     private void Awake()
     {
         AttackJoystick.FireValue += Shoot;
