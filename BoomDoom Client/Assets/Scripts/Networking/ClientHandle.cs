@@ -8,7 +8,6 @@ public static class ClientHandle
     public static void Welcome(Packet packet)
     {
         int clientID = packet.ReadInt();
-        Debug.Log("Received ID: " + clientID);
         Client.Instance.clientID = clientID;
         GameManager.Instance.SpawnLocalPlayer(clientID);
         ClientSend.WelcomeReceived();

@@ -14,7 +14,7 @@ public class Client
     private byte[] receiveBuffer;
     readonly int dataBufferSize = 4096;
     public int id { get; private set; }
-    public static Dictionary<int, Action<Packet>> packetActions = new Dictionary<int, Action<Packet>>
+    public static Dictionary<int, Action<int, Packet>> packetActions = new Dictionary<int, Action<int, Packet>>
     {
         { (int)ClientPackets.WelcomeReceived, ServerHandle.WelcomeReceived}
     };
@@ -38,13 +38,6 @@ public class Client
         stream.BeginWrite(data, 0, data.Length, null, null);
     }
 
-    public static void HandleData(byte[] data)
-    {
-        Packet packet = new Packet(data);
-        packet.SetBytes();
-        packetActions[packet.ReadInt()](packet);
-    }
-
     private void ReceiveCallback(IAsyncResult ar)
     {       
         int dataSize = stream.EndRead(ar);
@@ -52,5 +45,12 @@ public class Client
         Array.Copy(receiveBuffer, data, dataSize);
         HandleData(receiveBuffer);
         stream.BeginRead(receiveBuffer, 0, dataBufferSize, ReceiveCallback, null);
+    }
+
+    public void HandleData(byte[] data)
+    {
+        Packet packet = new Packet(data);
+        packet.SetBytes();
+        packetActions[packet.ReadInt()](id, packet);
     }
 }

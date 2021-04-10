@@ -4,9 +4,8 @@ using System;
 using UnityEngine;
 public static class ServerHandle
 {
-    public static void WelcomeReceived(Packet packet)
+    public static void WelcomeReceived(int fromClientID, Packet packet)
     {
-        int fromClientID = packet.ReadInt();
         foreach(Client client in Server.clients.Values)
         {
             if(client.id != fromClientID)

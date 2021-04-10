@@ -12,7 +12,6 @@ public static class ClientSend
     public static void WelcomeReceived()
     {
         Packet packet = new Packet((int)ClientPackets.WelcomeReceived);
-        packet.Write(Client.Instance.clientID);
         SendPacket(packet);
     }
 }

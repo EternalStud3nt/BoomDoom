@@ -33,7 +33,6 @@ public static class ServerSend
     {
         Packet packet = new Packet((int)ServerPackets.Welcome);
         packet.Write(toClient);
-        Debug.Log("Sending ID: " + toClient);
         SendData(toClient, packet);
     }
 
