@@ -17,7 +17,8 @@ public class Client : Singleton<Client>
     public static Dictionary<int, Action<Packet>> packetActions = new Dictionary<int, Action<Packet>>
     {
         { (int)ServerPackets.Welcome, ClientHandle.Welcome },
-        { (int)ServerPackets.SpawnPlayer, ClientHandle.SpawnPlayer }
+        { (int)ServerPackets.SpawnPlayer, ClientHandle.SpawnPlayer },
+        { (int)ServerPackets.SetPosition, ClientHandle.SetPosition }
     };
 
     public void Connect(string ip, int port)
@@ -40,20 +41,42 @@ public class Client : Singleton<Client>
 
     private void ReceiveCallback(IAsyncResult ar)
     {
-        stream.EndRead(ar);
-        ThreadManager.ExecuteOnMainThread(() => HandleData(buffer));
+        int byteCount = stream.EndRead(ar);
+        byte[] data = new byte[byteCount];
+        Array.Copy(buffer, data, byteCount);
+        ThreadManager.ExecuteOnMainThread(() => HandleData(data));
         stream.BeginRead(buffer, 0, dataBufferSize, ReceiveCallback, null);
     }
 
-    private void HandleData(byte[] data)
+    // We are sure that each packet will arrive as a whole, but many packets might be combined into one big packet
+    private void HandleData(byte[] data) 
     {
         Packet packet = new Packet(data);
         packet.SetBytes();
-        packetActions[packet.ReadInt()](packet);
+        int currentPacketData = packet.ReadInt();   // first packet to arrive size (except int that contains size info)
+        int unreadData = packet.GetUndreadData();   // whole packet size (except int that contains first packet's size info)
+        if (unreadData < 4)
+            return;
+        int i = 0;
+        while(unreadData >= currentPacketData)
+        {
+            print("num of packets in one stream: " + i);
+            i++;
+            byte[] subPacketData = packet.ReadBytes(currentPacketData);
+            Packet subPacket = new Packet(subPacketData);
+            subPacket.SetBytes();
+            int packetID = subPacket.ReadInt();
+            packetActions[packetID](subPacket);
+            print(packetID);
+            unreadData = packet.GetUndreadData();
+            if (unreadData < 4) // there must be at least one more int to read when we finish each packet, else we reached the end
+                break;
+            currentPacketData = packet.ReadInt();
+        }
     }
 
     public void SendData(byte[] data)
     {
-        stream.Write(data, 0, data.Length);
+        stream.BeginWrite(data, 0, data.Length, null, null);
     }
 }

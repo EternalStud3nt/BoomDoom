@@ -17,4 +17,9 @@ public static class ServerHandle
             }  
         }
     }
+
+    public static void MyPosition(int fromClientID, Packet packet)
+    {
+        ServerSend.SetPosition(fromClientID, packet.ReadVector2());
+    }
 }

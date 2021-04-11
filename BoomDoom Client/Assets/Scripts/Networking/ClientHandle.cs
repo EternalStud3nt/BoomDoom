@@ -18,4 +18,15 @@ public static class ClientHandle
         int newClientID = packet.ReadInt();
         GameManager.Instance.SpawnOnlinePlayer(newClientID);
     }
+
+    public static void SetPosition(Packet packet)
+    {
+        int clientID = packet.ReadInt();
+        Vector2 position = packet.ReadVector2();
+        GameManager.Instance.players.TryGetValue(clientID, out GameObject player);
+        if(player)
+        {
+            player.GetComponent<NetworkPlayer>().SetPosition(position);
+        }
+    }
 }

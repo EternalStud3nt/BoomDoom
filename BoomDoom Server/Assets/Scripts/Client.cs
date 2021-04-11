@@ -16,7 +16,8 @@ public class Client
     public int id { get; private set; }
     public static Dictionary<int, Action<int, Packet>> packetActions = new Dictionary<int, Action<int, Packet>>
     {
-        { (int)ClientPackets.WelcomeReceived, ServerHandle.WelcomeReceived}
+        { (int)ClientPackets.WelcomeReceived, ServerHandle.WelcomeReceived }, 
+        { (int)ClientPackets.MyPosition, ServerHandle.MyPosition }
     };
     
     public Client(int id)
@@ -43,14 +44,31 @@ public class Client
         int dataSize = stream.EndRead(ar);
         byte[] data = new byte[dataSize];
         Array.Copy(receiveBuffer, data, dataSize);
-        HandleData(receiveBuffer);
+        ThreadManager.ExecuteOnMainThread(() => HandleData(data));
         stream.BeginRead(receiveBuffer, 0, dataBufferSize, ReceiveCallback, null);
     }
 
-    public void HandleData(byte[] data)
+    private void HandleData(byte[] data)
     {
         Packet packet = new Packet(data);
         packet.SetBytes();
-        packetActions[packet.ReadInt()](id, packet);
+        int currentPacketData = packet.ReadInt();   // first packet to arrive size (except int that contains size info)
+        int unreadData = packet.GetUndreadData();   // whole packet size (except int that contains first packet's size info)
+        if (unreadData < 4)
+            return;
+        int i = 0;
+        while (unreadData >= currentPacketData)
+        {
+            Debug.Log("num of packets in one stream: " + i);
+            i++;
+            byte[] subPacketData = packet.ReadBytes(currentPacketData);
+            Packet subPacket = new Packet(subPacketData);
+            subPacket.SetBytes();
+            packetActions[subPacket.ReadInt()](id, subPacket);
+            unreadData = packet.GetUndreadData();
+            if (unreadData < 4) // there must be at least one more int to read when we finish each packet, else we reached the end
+                break;
+            currentPacketData = packet.ReadInt();
+        }
     }
 }

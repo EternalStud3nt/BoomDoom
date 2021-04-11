@@ -7,13 +7,15 @@ using UnityEngine;
 
 public enum ClientPackets
 {
-    WelcomeReceived = 1
+    WelcomeReceived = 1,
+    MyPosition
 }
 
 public enum ServerPackets
 {
     Welcome = 1,
     SpawnPlayer,
+    SetPosition
 }
 public class Packet
 {
@@ -36,13 +38,28 @@ public class Packet
     #region Functions
     public byte[] ToArray()
     {
-        arrayBuffer = listBuffer.ToArray();
+        SetBytes();
         return arrayBuffer;
     }
 
     public void SetBytes()
     {
         arrayBuffer = listBuffer.ToArray();
+    }
+
+    public void InsertDataSize()
+    {
+        listBuffer.InsertRange(0, BitConverter.GetBytes(listBuffer.Count));
+    }
+
+    public int GetUndreadData()
+    {
+        return listBuffer.Count - readPos;
+    }
+
+    public int GetDataSize()
+    {
+        return listBuffer.Count;
     }
     #endregion
     #region Write
