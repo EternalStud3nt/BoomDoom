@@ -8,14 +8,16 @@ using UnityEngine;
 public enum ClientPackets
 {
     WelcomeReceived = 1,
-    MyPosition
+    MyPosition,
+    RequestDisconnect
 }
 
 public enum ServerPackets
 {
     Welcome = 1,
     SpawnPlayer,
-    SetPosition
+    SetPosition,
+    PlayerDisconnected
 }
 public class Packet
 {

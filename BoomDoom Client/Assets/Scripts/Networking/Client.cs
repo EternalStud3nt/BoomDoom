@@ -13,12 +13,14 @@ public class Client : Singleton<Client>
     private byte[] buffer;
     public Action OnConnection;
     public int clientID;
+    bool connected = false;
 
     public static Dictionary<int, Action<Packet>> packetActions = new Dictionary<int, Action<Packet>>
     {
         { (int)ServerPackets.Welcome, ClientHandle.Welcome },
         { (int)ServerPackets.SpawnPlayer, ClientHandle.SpawnPlayer },
-        { (int)ServerPackets.SetPosition, ClientHandle.SetPosition }
+        { (int)ServerPackets.SetPosition, ClientHandle.SetPosition },
+        { (int)ServerPackets.PlayerDisconnected, ClientHandle.PlayerDisconnected }
     };
 
     public void Connect(string ip, int port)
@@ -33,6 +35,7 @@ public class Client : Singleton<Client>
     private void OnConnectedToServerCallback(IAsyncResult ar)
     {
         socket.EndConnect(ar);
+        connected = true;
         buffer = new byte[dataBufferSize];
         stream = socket.GetStream();
         stream.BeginRead(buffer, 0, dataBufferSize, ReceiveCallback, null);
@@ -60,7 +63,6 @@ public class Client : Singleton<Client>
         int i = 0;
         while(unreadData >= currentPacketData)
         {
-            print("num of packets in one stream: " + i);
             i++;
             byte[] subPacketData = packet.ReadBytes(currentPacketData);
             Packet subPacket = new Packet(subPacketData);
@@ -78,5 +80,11 @@ public class Client : Singleton<Client>
     public void SendData(byte[] data)
     {
         stream.BeginWrite(data, 0, data.Length, null, null);
+    }
+
+    private void OnApplicationQuit()
+    {
+        if(connected)
+            ClientSend.RequestDisconnect();
     }
 }

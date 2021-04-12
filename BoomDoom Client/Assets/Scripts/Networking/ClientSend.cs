@@ -22,4 +22,10 @@ public static class ClientSend
         packet.Write(position);
         SendPacket(packet);
     }
+
+    public static void RequestDisconnect()
+    {
+        Packet packet = new Packet((int)ClientPackets.RequestDisconnect);
+        SendPacket(packet);
+    }
 }

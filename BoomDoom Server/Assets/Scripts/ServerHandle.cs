@@ -22,4 +22,9 @@ public static class ServerHandle
     {
         ServerSend.SetPosition(fromClientID, packet.ReadVector2());
     }
+
+    public static void RequestDisconnect(int clientID, Packet packet)
+    {
+        Server.clients[clientID].Disconnect(); 
+    }
 }

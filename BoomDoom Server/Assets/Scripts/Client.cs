@@ -14,10 +14,12 @@ public class Client
     private byte[] receiveBuffer;
     readonly int dataBufferSize = 4096;
     public int id { get; private set; }
+    bool disconnecting = false;
     public static Dictionary<int, Action<int, Packet>> packetActions = new Dictionary<int, Action<int, Packet>>
     {
         { (int)ClientPackets.WelcomeReceived, ServerHandle.WelcomeReceived }, 
-        { (int)ClientPackets.MyPosition, ServerHandle.MyPosition }
+        { (int)ClientPackets.MyPosition, ServerHandle.MyPosition },
+        { (int)ClientPackets.RequestDisconnect, ServerHandle.RequestDisconnect }
     };
     
     public Client(int id)
@@ -27,6 +29,7 @@ public class Client
 
     public void Connect(TcpClient socket)
     {
+        disconnecting = false;
         receiveBuffer = new byte[dataBufferSize];
         this.socket = socket;
         stream = this.socket.GetStream();
@@ -36,16 +39,36 @@ public class Client
 
     public void SendData(byte[] data)
     {
-        stream.BeginWrite(data, 0, data.Length, null, null);
+        try
+        {
+            stream.BeginWrite(data, 0, data.Length, null, null);
+        }
+        catch
+        {
+            Disconnect();
+        }
     }
 
     private void ReceiveCallback(IAsyncResult ar)
-    {       
-        int dataSize = stream.EndRead(ar);
-        byte[] data = new byte[dataSize];
-        Array.Copy(receiveBuffer, data, dataSize);
-        ThreadManager.ExecuteOnMainThread(() => HandleData(data));
-        stream.BeginRead(receiveBuffer, 0, dataBufferSize, ReceiveCallback, null);
+    {
+        try
+        {
+            int dataSize = stream.EndRead(ar);
+            if (dataSize == 0)
+            {
+                ThreadManager.ExecuteOnMainThread(() => Disconnect());
+                return;
+            }
+            byte[] data = new byte[dataSize];
+            Array.Copy(receiveBuffer, data, dataSize);
+            ThreadManager.ExecuteOnMainThread(() => HandleData(data));
+            stream.BeginRead(receiveBuffer, 0, dataBufferSize, ReceiveCallback, null);
+        }
+        catch
+        {
+            ThreadManager.ExecuteOnMainThread(() => Disconnect());
+        }
+        
     }
 
     private void HandleData(byte[] data)
@@ -59,7 +82,6 @@ public class Client
         int i = 0;
         while (unreadData >= currentPacketData)
         {
-            Debug.Log("num of packets in one stream: " + i);
             i++;
             byte[] subPacketData = packet.ReadBytes(currentPacketData);
             Packet subPacket = new Packet(subPacketData);
@@ -70,5 +92,22 @@ public class Client
                 break;
             currentPacketData = packet.ReadInt();
         }
+    }
+
+    public void Disconnect()
+    {
+        if(!disconnecting)
+        {
+            disconnecting = true;
+            Server.clients.TryGetValue(id, out Client client);
+            if (client != null)
+            {
+                int id = client.id;
+                ServerSend.PlayerDisconnected(id);
+                Server.clients.Remove(id);
+                socket.Close();
+                Debug.Log($"Client {id} left the server.");
+            }
+        }        
     }
 }

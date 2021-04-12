@@ -8,7 +8,9 @@ public static class ServerSend
     private static void SendData(int toClient, Packet packet)
     {
         packet.InsertDataSize();
-        Server.clients[toClient].SendData(packet.ToArray());
+        Server.clients.TryGetValue(toClient, out Client client);
+        if(client!=null)
+            client.SendData(packet.ToArray());
     }
 
     private static void SendDataToAll(Packet packet)
@@ -23,9 +25,10 @@ public static class ServerSend
     private static void SendDataToAll(int exceptClientID, Packet packet)
     {
         packet.InsertDataSize();
-        for (int i = 0; i <Server.clients.Count; i++)
+        foreach(Client client in Server.clients.Values)
         {
-            if(i != exceptClientID)
+            int i = client.id;
+            if (i != exceptClientID)
             {
                 Server.clients[i].SendData(packet.ToArray());
             }
@@ -52,5 +55,12 @@ public static class ServerSend
         packet.Write(clientID);
         packet.Write(position);
         SendDataToAll(clientID, packet);
+    }
+
+    internal static void PlayerDisconnected(int id)
+    {
+        Packet packet = new Packet((int)ServerPackets.PlayerDisconnected);
+        packet.Write(id);
+        SendDataToAll(packet);
     }
 }

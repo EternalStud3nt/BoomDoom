@@ -22,10 +22,20 @@ public static class Server
 
     private static void AcceptTCPClientCallback(IAsyncResult ar)
     {
-        Debug.Log("NEW CLIENT");
         TcpClient tcpClient = listener.EndAcceptTcpClient(ar);
-        Client client = new Client(clients.Count);
-        clients.Add(clients.Count, client);
+        int id = clients.Count;
+        for(int i=0; i<clients.Count; i++)
+        {
+            clients.TryGetValue(i, out Client newClient);
+            if (newClient == null)
+            {
+                id = i;
+                break;
+            }               
+        }
+        Debug.Log("A new player joined, ID: " + id);
+        Client client = new Client(id);
+        clients.Add(id, client);
         client.Connect(tcpClient);
         listener.BeginAcceptTcpClient(AcceptTCPClientCallback, null);
     }
